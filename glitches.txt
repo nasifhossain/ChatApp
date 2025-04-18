@@ -1,0 +1,4 @@
+Authorization not implemented properly
+Anyone can make two users as friends, suppose A and B and A and C are friends, i.e A has userid of B and User ID of C, he can post request with senderID A and receiverID B, to make them friends{
+    fix: do not use senderID, extract it at backend from token 
+}
