@@ -119,7 +119,7 @@ const LeftBar = () => {
 
       {/* Friends List */}
       <div className="flex flex-col items-start justify-start gap-4 w-full text-white overflow-y-auto">
-        {myFriends.map((item) => (
+        {myFriends?.map((item) => (
           <div className="w-full" key={item.id}>
             <div
               className="flex flex-row items-center justify-start gap-3 hover:bg-slate-800 p-2 rounded-md w-full hover:cursor-pointer"

@@ -19,7 +19,7 @@ const useChatData = ({ conversationId }) => {
         setMessages((prev) => [...prev, newMessage]);
         console.log("newMessage : ", newMessage);
         setMyFriends((prevFriends) =>
-          prevFriends.map((friend) =>
+          prevFriends?.map((friend) =>
             friend.id === conversationId
               ? { ...friend, lastMessage: newMessage.message }
               : friend
@@ -27,12 +27,12 @@ const useChatData = ({ conversationId }) => {
         );
         return;
       }
-      const findConversation = myFriends.find(
+      const findConversation = myFriends?.find(
         (friend) => friend.id === newMessage.conversationId
       );
       if (findConversation) {
         setMyFriends((prevFriends) =>
-          prevFriends.map((friend) =>
+          prevFriends?.map((friend) =>
             friend.id === findConversation.id
               ? { ...friend, lastMessage: newMessage.message }
               : friend
@@ -64,7 +64,7 @@ const useChatData = ({ conversationId }) => {
           const latestMessage =
             fetchedMessages[fetchedMessages.length - 1].message;
           setMyFriends((prevFriends) =>
-            prevFriends.map((friend) =>
+            prevFriends?.map((friend) =>
               friend.id === conversationId
                 ? { ...friend, lastMessage: latestMessage }
                 : friend
