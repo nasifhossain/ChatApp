@@ -2,29 +2,41 @@ import React, { useState } from "react";
 import logo_big from "../../assets/logo_big.png";
 import background from "../../assets/background.png";
 import { useForm } from "react-hook-form";
-import axios from "axios";  
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const onSubmit = (data) => {
-    console.log(data);
     setLoading(true);
-    axios.post(`${backendUrl}/user/login`,data).then(response=>{
-      console.log(response);
-      localStorage.setItem('token',response.data.token);
-      localStorage.setItem('email',response.data.email);
-      localStorage.setItem('_id',response.data._id);
-      navigate('/chat');
-      }).catch(error=>{
-      console.log(error);
-      setError(error.response);
-    }).finally(()=>{
-      setLoading(false);
-    });
+    setError(null); // Reset previous error
+
+    axios.post(`${backendUrl}/user/login`, data)
+      .then(response => {
+        console.log(response.data);
+
+        const { token, email, _id } = response.data;
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('email', email);
+        localStorage.setItem('_id', _id);
+
+        navigate('/chat');
+      })
+      .catch(error => {
+        console.error(error);
+        const errMsg = error?.response?.data?.message || "Login failed. Please try again.";
+        setError(errMsg);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -60,7 +72,6 @@ const Login = () => {
         />
         {errors.password && <span className="text-sm text-red-500">Password is required</span>}
 
-        {/* Terms Agreement */}
         <label className="flex items-center space-x-2 w-full text-sm text-gray-700">
           <input
             type="checkbox"
@@ -79,9 +90,11 @@ const Login = () => {
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
+
         <span className="text-sm text-gray-700">
           Don't have an account? <a href="/register" className="text-blue-600 underline">Sign up</a>
         </span>
+
         {error && <span className="text-sm text-red-500">{error}</span>}
       </form>
     </div>
