@@ -6,23 +6,28 @@ const API_PORT = process.env.PORT || 3000;
 const SOCKET_PORT = process.env.SOCKET_PORT || 8000;
 
 // Create HTTP server for Express
-const apiServer = http.createServer(app);
-apiServer.listen(API_PORT, () => {
-  console.log(`API Server running on port ${API_PORT}`);
-});
+const server = http.createServer(app);
+// apiServer.listen(API_PORT, () => {
+//   console.log(`API Server running on port ${API_PORT}`);
+// });
 
 // Create separate HTTP server for Socket.IO
-const socketServer = http.createServer();
-const io = require('socket.io')(socketServer, {
+//const socketServer = http.createServer();
+const { Server } = require("socket.io");
+const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
-
-socketServer.listen(SOCKET_PORT, () => {
-  console.log(`Socket.IO server running on port ${SOCKET_PORT}`);
+server.listen(API_PORT, () => {
+  console.log(`Server running on port ${API_PORT}`);
 });
+
+
+// socketServer.listen(SOCKET_PORT, () => {
+//   console.log(`Socket.IO server running on port ${SOCKET_PORT}`);
+// });
 
 // Socket.IO connection handling
 let users = [];
@@ -72,4 +77,4 @@ io.on('connection', (socket) => {
   });
 });   
 
-module.exports = { apiServer, socketServer }; 
+module.exports = { server}; 
