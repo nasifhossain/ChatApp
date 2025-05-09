@@ -1,37 +1,68 @@
-import { useEffect, useState,useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import profile_alison from "../assets/profile_alison.png";
-import profile_marco from "../assets/profile_marco.png";
-import profile_martin from "../assets/profile_martin.png";
-import avatar_icon from "../assets/avatar_icon.png";
 import { ChatContext } from "../Context/ChatContext";
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const useFriendsData = (username) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const {myFriends,setMyFriends} = useContext(ChatContext);
+  const { setMyFriends, socket } = useContext(ChatContext);
   useEffect(() => {
-    if (!username) return;
-
-    const fetchData = async () => {
-      axios.get(`${backendUrl}/conversation/${localStorage.getItem('_id')}`)
-      .then((response) => {
-        console.log(response.data);
-        setData(response.data.conversationList);
-        setMyFriends(response.data.conversationList);
-      })
-      .catch((error) => {
-        setError(error);
-      }).finally(() => {
-        setLoading(false);
+    if(!socket || !data) return;
+   data.forEach(friend => {
+      socket.emit("checkStatus", {
+        targetUserId: friend.receiverId,
+        requesterId: localStorage.getItem("_id")
       });
+    });
+  },[socket,data]);
 
+  useEffect(() => {
+    if(!socket) return;
+    const handleStatusUpdate = (statusData) => {
+      setData(prev => prev.map(user => 
+        user.receiverId === statusData.userId 
+          ? { ...user, status: statusData.status } 
+          : user
+      ));
+      setMyFriends(prev => prev.map(user => 
+        user.receiverId === statusData.userId 
+          ? { ...user, status: statusData.status } 
+          : user
+      ));
+    };
+    socket.on("checkStatus", handleStatusUpdate);
+  },[data,socket]); 
+
+  useEffect(() => {
+    
+
+    const getData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/conversation/${localStorage.getItem("_id")}`
+        );
+
+        if (response?.data?.conversationList) {
+          // Initialize with default status
+          const friendsWithStatus = response.data.conversationList.map(friend => ({
+            ...friend,
+            status: "Offline"
+          }));
+
+          setData(friendsWithStatus);
+          setMyFriends(friendsWithStatus);
+        }
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
-  }, [username]);
+    getData();
+  }, [username, socket, setMyFriends]);
 
   return { data, loading, error };
 };

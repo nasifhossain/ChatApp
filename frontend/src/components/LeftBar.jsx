@@ -1,11 +1,12 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { FaSearch, FaEllipsisV, FaUserPlus } from "react-icons/fa";
+import { FaSearch, FaEllipsisV, FaUserPlus, FaCheck } from "react-icons/fa";
 import useFriendsData from "../Data/LeftBarData";
 import logo_big from "../assets/logo_big.png";
 import { ChatContext } from "../Context/ChatContext";
 import { useNavigate } from "react-router-dom";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
+
 const LeftBar = () => {
   const { data, loading, error } = useFriendsData("ron");
   const { setUser, showLeftBar, setShowLeftBar, myFriends, setMyFriends } =
@@ -16,6 +17,9 @@ const LeftBar = () => {
   const navigate = useNavigate();
   const [searchedFriend, setSearchedFriend] = useState(null);
   const [searchFriendText, setSearchFriendText] = useState("");
+  const [addFriendText, setAddFriendText] = useState("");
+  const [addFriendStatus, setAddFriendStatus] = useState(""); // 'success' or 'error'
+
   // Hide dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,15 +35,33 @@ const LeftBar = () => {
     navigate("/profile");
     setShowDropdown(false);
   };
+
   const handleAddFriend = async (friendId) => {
     try {
       const response = await axios.post(`${backendUrl}/conversation`, {
         senderId: localStorage.getItem("_id"),
         receiverId: friendId,
       });
-      console.log(response);
+      
+      setAddFriendText(response.data.message);
+      setAddFriendStatus("success");
+      
+      setTimeout(() => {
+        setAddFriendText("");
+        setAddFriendStatus("");
+      }, 3000);
+      
+      setTimeout(() => {
+        navigate(0);
+      }, 3500);
+      
     } catch (error) {
-      console.log(error);
+      setAddFriendText(error.response?.data?.message || "Failed to add friend");
+      setAddFriendStatus("error");
+      setTimeout(() => {
+        setAddFriendText("");
+        setAddFriendStatus("");
+      }, 3000);
     }
   };
 
@@ -54,7 +76,6 @@ const LeftBar = () => {
     try {
       const response = await axios.get(`${backendUrl}/user/${e.target.value}`);
       setSearchedFriend(response.data.userDetails);
-      console.log("searchedFriend:", response.data.userDetails);
     } catch (error) {
       console.log(error);
     }
@@ -128,38 +149,68 @@ const LeftBar = () => {
                 setShowLeftBar(false);
               }}
             >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-10 rounded-full"
-              />
+              <div className="relative">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-10 rounded-full"
+                />
+                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${
+                  item.status === 'Online' ? 'bg-green-500' : 'bg-gray-500'
+                }`}></div>
+              </div>
               <div className="flex flex-col items-start justify-start">
                 <p className="text-md font-bold">{item.name}</p>
-                <p className="text-sm">{item.lastMessage}</p>
+                <div className="flex items-center gap-1">
+                  
+                  <p className="text-md text-gray-400 truncate max-w-[120px]">
+                    {item.lastMessage}
+                  </p>
+                </div>
               </div>
             </div>
-            <hr className="w-full border-amber-100" />
+            <hr className="w-full border-slate-700" />
           </div>
         ))}
       </div>
 
+      {/* Add Friend Modal */}
       {showAddFriend && (
-        <div className="absolute top-0 left-0 w-full h-full flex items-start justify-center bg-black/45 bg-opacity-60 z-50">
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-50">
           <div className="bg-slate-800 rounded-xl p-6 w-96 shadow-lg border border-amber-300 relative">
             <h2 className="text-xl font-bold text-white mb-4 text-center">
               Search Friend
             </h2>
 
+            {/* Status Message */}
+            {addFriendText && (
+              <div className={`mb-4 p-2 rounded-md text-sm flex items-center gap-2 ${
+                addFriendStatus === 'success' 
+                  ? 'bg-green-900/50 text-green-300 border border-green-500' 
+                  : 'bg-red-900/50 text-red-300 border border-red-500'
+              }`}>
+                {addFriendStatus === 'success' && (
+                  <FaCheck className="text-green-400" />
+                )}
+                {addFriendText}
+              </div>
+            )}
+
             <input
               type="text"
               placeholder="Enter username..."
+              value={searchFriendText}
               className="w-full p-2 rounded-md border border-amber-100 bg-slate-900 text-white placeholder-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               onChange={handleSearchFriend}
             />
 
             {/* Close Modal */}
             <button
-              onClick={() => setShowAddFriend(false)}
+              onClick={() => {
+                setShowAddFriend(false);
+                setSearchedFriend(null);
+                setSearchFriendText("");
+              }}
               className="absolute top-2 right-3 text-white hover:text-red-400 text-xl"
             >
               &times;
@@ -183,9 +234,6 @@ const LeftBar = () => {
                         <p className="font-bold">{friend.name}</p>
                         <p className="text-sm text-amber-200">
                           @{friend.username}
-                        </p>
-                        <p className="text-xs italic text-amber-400">
-                          {friend.bio}
                         </p>
                       </div>
                     </div>

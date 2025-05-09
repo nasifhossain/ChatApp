@@ -19,23 +19,27 @@ const ChatHistory = () => {
     socket,
   } = useContext(ChatContext);
   const [currentMessage, setCurrentMessage] = useState("");
-  console.log(user);
+  //console.log(user);
 
   const bottomRef = useRef(null);
 
   //console.log('user : ',user);
-  const { messages, loading, error } = useChatData({user,setUser,conversationId:user?.id});
+  const { messages, loading, error } = useChatData({
+    user,
+    setUser,
+    conversationId: user?.id,
+  });
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-  console.log(user?.id);
+  //console.log(user?.id);
   if (!user) {
     return <div>No user selected</div>;
   }
-  console.log("messages : ", messages);
-  console.log("user : ", user);
+  //console.log("messages : ", messages);
+  //console.log("user : ", user);
   const handleBack = () => {
     setShowChat(false);
     setShowLeftBar(true);
@@ -64,17 +68,16 @@ const ChatHistory = () => {
         console.log(error);
       })
       .finally(() => {
-        setUser({...user,lastMessage:currentMessage});
-        console.log('Hello ',user.lastMessage);
+        setUser({ ...user, lastMessage: currentMessage });
+        console.log("Hello ", user.lastMessage);
         setCurrentMessage("");
-        
       });
 
-      setTimeout(() => {
-        if (bottomRef.current) {
-          bottomRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
+    setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
   };
 
   return (
@@ -98,7 +101,13 @@ const ChatHistory = () => {
           onClick={() => setShowProfile(true)}
         >
           <p className="text-lg font-semibold">{user.name}</p>
-          <p className="text-sm text-green-400">Online</p>
+          <p
+            className={`text-sm ${
+              user.status === "Online" ? "text-green-500" : "text-gray-400"
+            }`}
+          >
+            {user.status}
+          </p>
         </div>
       </div>
 
@@ -113,7 +122,7 @@ const ChatHistory = () => {
                 </div>
               </div>
             ) : (
-              <div key={message._id} className="flex justify-end mb-2">
+              <div key={message?._id} className="flex justify-end mb-2">
                 <div className="bg-blue-600 text-white rounded-b-lg rounded-tl-md py-2 px-4 max-w-xs md:max-w-md">
                   <p className="break-words">{message.message}</p>
                 </div>

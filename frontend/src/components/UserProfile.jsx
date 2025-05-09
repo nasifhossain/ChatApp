@@ -1,18 +1,47 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../Context/ChatContext";
 import { FaArrowLeft, FaBan } from "react-icons/fa"; // 🚫 Block icon
-import { CgClose } from "react-icons/cg"
-
+import { CgClose } from "react-icons/cg"// Assuming you have a socket context
 const UserProfile = ({ user }) => {
-  const { setShowProfile } = useContext(ChatContext);
+  const { setShowProfile,socket} = useContext(ChatContext);
   const [showConfirmBlock, setShowConfirmBlock] = useState(false);
-
+  const [userStatus, setUserStatus] = useState(""); // Example status
+  
   const handleBlock = () => {
     setShowConfirmBlock(false);
     // TODO: Backend logic or context update
     console.log(`User ${user.name} blocked`);
     setShowProfile(false);
   };
+//console.log(user.receiverId);
+  // useEffect(() => {
+  //   if (socket && user) {
+  //     socket.emit("checkStatus", {
+  //       targetUserId: user.receiverId,
+  //       requesterId: localStorage.getItem("_id"),
+  //     });
+  //   }
+  // }, [user,socket]);
+
+  // useEffect(() => {
+  //   if (socket && user?.receiverId) {
+  //     const handleStatus = (data) => {
+  //       if (data.userId === user.receiverId) {
+  //         setUserStatus(data.status);
+  //       } else{
+  //         setUserStatus("Unknown User");
+
+  //       }
+  //     };
+  
+  //     socket.on("checkStatus", handleStatus);
+  
+  //     // return () => {
+  //     //   socket.off("checkStatus", handleStatus); // ✅ Cleanup
+  //     // };
+  //   }
+  // }, [user, socket]);
+  
 
   return (
     <div className="relative m-2">
@@ -31,8 +60,8 @@ const UserProfile = ({ user }) => {
           className="w-24 h-24 rounded-full border-4 border-amber-400"
         />
         <h2 className="text-2xl font-bold">{user.name}</h2>
-        <p className="text-green-400">Online</p>
-        <p className="text-sm text-gray-300">More details here...</p>
+        <p className={`${user.status==='Online'? "text-green-500":"text-gray-400" }`}>{user.status}</p>
+        <p className="text-sm text-gray-300">{user.bio}</p>
 
         {/* 🚫 Block User Button with Icon */}
         <button

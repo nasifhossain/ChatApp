@@ -34,7 +34,6 @@ let users = [];
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-
   socket.on('addUser', (userId) => {
     users = users.filter(user => user.userId !== userId); // Remove if exists
     users.push({ userId, socketId: socket.id });
@@ -69,7 +68,17 @@ io.on('connection', (socket) => {
       }
     }
   });
-
+  socket.on('checkStatus', ({ targetUserId, requesterId }) => {
+   // console.log('Checking status for user:', targetUserId);
+    const targetUser = users.find(user => user.userId === targetUserId);
+   // console.log('Target User:', targetUser);
+    if (targetUser) {
+      io.to(socket.id).emit('checkStatus', { userId: targetUserId, status: 'Online' });
+    } else {
+      io.to(socket.id).emit('checkStatus', { userId: targetUserId, status: 'Offline' });
+    }
+  }
+  );
   socket.on('disconnect', () => {
     users = users.filter(user => user.socketId !== socket.id);
     io.emit('getUsers', users);
