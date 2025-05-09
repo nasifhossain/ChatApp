@@ -142,7 +142,7 @@ router.put('/update', async (req, res) => {
     }
     if(username){
       const existingUsername = await User.findOne({ username: username });
-      if (existingUsername) {
+      if (existingUsername && existingUsername._id.toString() !== userId) {
         return res.status(400).json({ message: 'Username already exists' });
       }
     }

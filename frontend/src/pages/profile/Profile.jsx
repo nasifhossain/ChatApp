@@ -41,6 +41,7 @@ const Profile = () => {
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -99,18 +100,18 @@ const Profile = () => {
     try {
       setSaving(true);
       let uploadedImageUrl = profileImageUrl;
-  
+
       if (croppedBlob) {
         const formData = new FormData();
         formData.append("file", croppedBlob);
         formData.append("upload_preset", "ReactAPP");
         formData.append("cloud_name", cloudName);
-  
+
         const uploadRes = await axios.post(cloudUrl, formData);
         uploadedImageUrl = uploadRes.data.url;
       }
-  
-      await axios.put(
+
+      const res = await axios.put(
         `${backendUrl}/user/update`,
         {
           name: data.name,
@@ -124,16 +125,21 @@ const Profile = () => {
           },
         }
       );
-  
+      if (res.status === 200) {
+        //console.log("Profile updated successfully:", res.data);
+        setUpdateMessage(res.data.message);
+        setTimeout(() => {
+          setUpdateMessage(null);
+        }, 3000);
+      }
       setProfileImageUrl(uploadedImageUrl);
     } catch (err) {
-      console.error("Error during profile update:", err);
-      setFileError("Something went wrong. Please try again.");
+      console.log("Error during profile update:", err.response);
+      setFileError(err.response.data.message|| "Error updating profile. Try again.");
     } finally {
       setSaving(false);
     }
   };
-  
 
   if (loading) {
     return (
@@ -233,6 +239,11 @@ const Profile = () => {
             {saving ? "Saving..." : "Save"}
           </button>
         </form>
+        {updateMessage ? (
+          <p className="text-green-500 mt-2 text-center text-sm">
+            {updateMessage}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-6">
