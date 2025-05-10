@@ -13,34 +13,31 @@ const UserProfile = ({ user }) => {
     console.log(`User ${user.name} blocked`);
     setShowProfile(false);
   };
-//console.log(user.receiverId);
-  // useEffect(() => {
-  //   if (socket && user) {
-  //     socket.emit("checkStatus", {
-  //       targetUserId: user.receiverId,
-  //       requesterId: localStorage.getItem("_id"),
-  //     });
-  //   }
-  // }, [user,socket]);
+console.log(user.receiverId);
+  useEffect(() => {
+    if (socket && user) {
+      socket.emit("checkStatus", {
+        targetUserId: user.receiverId,
+        requesterId: localStorage.getItem("_id"),
+      });
+    }
+  }, [user,socket]);
 
-  // useEffect(() => {
-  //   if (socket && user?.receiverId) {
-  //     const handleStatus = (data) => {
-  //       if (data.userId === user.receiverId) {
-  //         setUserStatus(data.status);
-  //       } else{
-  //         setUserStatus("Unknown User");
-
-  //       }
-  //     };
+  useEffect(() => {
+    if (socket && user?.receiverId) {
+      const handleStatus = (data) => {
+        if (data.userId === user.receiverId) {
+          setUserStatus(data.status);
+        }
+      };
   
-  //     socket.on("checkStatus", handleStatus);
+      socket.on("checkStatus", handleStatus);
   
-  //     // return () => {
-  //     //   socket.off("checkStatus", handleStatus); // ✅ Cleanup
-  //     // };
-  //   }
-  // }, [user, socket]);
+      // return () => {
+      //   socket.off("checkStatus", handleStatus); // ✅ Cleanup
+      // };
+    }
+  }, [user, socket]);
   
 
   return (
@@ -60,7 +57,7 @@ const UserProfile = ({ user }) => {
           className="w-24 h-24 rounded-full border-4 border-amber-400"
         />
         <h2 className="text-2xl font-bold">{user.name}</h2>
-        <p className={`${user.status==='Online'? "text-green-500":"text-gray-400" }`}>{user.status}</p>
+        <p className={`${userStatus==='Online'? "text-green-500":"text-gray-400" }`}>{userStatus}</p>
         <p className="text-sm text-gray-300">{user.bio}</p>
 
         {/* 🚫 Block User Button with Icon */}

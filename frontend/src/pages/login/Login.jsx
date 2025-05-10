@@ -8,7 +8,15 @@ import { useNavigate } from "react-router-dom";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Login = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  if (localStorage.getItem("token")) {
+    window.location.href = "/chat";
+  }
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,21 +25,22 @@ const Login = () => {
     setLoading(true);
     setError(null); // Reset previous error
 
-    axios.post(`${backendUrl}/user/login`, data)
-      .then(response => {
+    axios
+      .post(`${backendUrl}/user/login`, data)
+      .then((response) => {
         console.log(response.data);
 
         const { token, email, _id } = response.data;
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('email', email);
-        localStorage.setItem('_id', _id);
-
-        navigate('/chat');
+        localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
+        localStorage.setItem("_id", _id);
+        window.location.href = "/chat";
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
-        const errMsg = error?.response?.data?.message || "Login failed. Please try again.";
+        const errMsg =
+          error?.response?.data?.message || "Login failed. Please try again.";
         setError(errMsg);
       })
       .finally(() => {
@@ -62,7 +71,9 @@ const Login = () => {
           {...register("email", { required: true })}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {errors.email && <span className="text-sm text-red-500">Email is required</span>}
+        {errors.email && (
+          <span className="text-sm text-red-500">Email is required</span>
+        )}
 
         <input
           type="password"
@@ -70,7 +81,9 @@ const Login = () => {
           {...register("password", { required: true })}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {errors.password && <span className="text-sm text-red-500">Password is required</span>}
+        {errors.password && (
+          <span className="text-sm text-red-500">Password is required</span>
+        )}
 
         <label className="flex items-center space-x-2 w-full text-sm text-gray-700">
           <input
@@ -79,20 +92,34 @@ const Login = () => {
             className="w-4 h-4 accent-blue-600"
           />
           <span>
-            I agree to the <a href="#" className="text-blue-600 underline">Terms of Use</a> and <a href="#" className="text-blue-600 underline">Privacy Policy</a>
+            I agree to the{" "}
+            <a href="#" className="text-blue-600 underline">
+              Terms of Use
+            </a>{" "}
+            and{" "}
+            <a href="#" className="text-blue-600 underline">
+              Privacy Policy
+            </a>
           </span>
         </label>
-        {errors.terms && <span className="text-sm text-red-500">You must agree before logging in</span>}
+        {errors.terms && (
+          <span className="text-sm text-red-500">
+            You must agree before logging in
+          </span>
+        )}
 
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold"
         >
-          {loading ? 'Logging in...' : 'Login'}
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <span className="text-sm text-gray-700">
-          Don't have an account? <a href="/register" className="text-blue-600 underline">Sign up</a>
+          Don't have an account?{" "}
+          <a href="/register" className="text-blue-600 underline">
+            Sign up
+          </a>
         </span>
 
         {error && <span className="text-sm text-red-500">{error}</span>}

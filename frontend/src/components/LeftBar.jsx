@@ -68,7 +68,7 @@ const LeftBar = () => {
   const handleLogout = () => {
     localStorage.clear();
     setShowDropdown(false);
-    navigate("/login");
+    window.location.href = '/login';
   };
 
   const handleSearchFriend = async (e) => {

@@ -18,9 +18,12 @@ const ChatHistory = () => {
     setShowProfile,
     socket,
   } = useContext(ChatContext);
+  if (!user) {
+    return <div>No user selected</div>;
+  }
   const [currentMessage, setCurrentMessage] = useState("");
   //console.log(user);
-
+  const[userStatus,setUserStatus] = useState("");
   const bottomRef = useRef(null);
 
   //console.log('user : ',user);
@@ -29,17 +32,44 @@ const ChatHistory = () => {
     setUser,
     conversationId: user?.id,
   });
+
+ 
+
+  useEffect(() => {
+    if (socket && user) {
+      socket.emit("checkStatus", {
+        targetUserId: user.receiverId,
+        requesterId: localStorage.getItem("_id"),
+      });
+    }
+  }, [socket,user]);
+
+  useEffect(()=>{
+    if(socket && user?.receiverId){
+      const handleStatus = (data) => {
+        if(data.userId === user.receiverId){
+          setUserStatus(data.status);
+        }
+      };
+      socket.on("checkStatus", handleStatus);
+      return () => {
+        socket.off("checkStatus", handleStatus); // ✅ Cleanup
+      };
+    }
+  },[socket,user]);
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
   //console.log(user?.id);
-  if (!user) {
-    return <div>No user selected</div>;
-  }
+  
   //console.log("messages : ", messages);
   //console.log("user : ", user);
+
+  
+
+
   const handleBack = () => {
     setShowChat(false);
     setShowLeftBar(true);
@@ -103,10 +133,10 @@ const ChatHistory = () => {
           <p className="text-lg font-semibold">{user.name}</p>
           <p
             className={`text-sm ${
-              user.status === "Online" ? "text-green-500" : "text-gray-400"
+              userStatus === "Online" ? "text-green-500" : "text-gray-400"
             }`}
           >
-            {user.status}
+            {userStatus==='Online' ? "Active Now" : userStatus}
           </p>
         </div>
       </div>
